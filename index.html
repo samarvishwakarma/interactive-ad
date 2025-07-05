@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" class="w-full h-full">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weather AR Tea</title>
+  <script type="module" src="src/main.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="src/style.css" rel="stylesheet">
+</head>
+<body class="m-0 w-full h-full overflow-hidden relative text-white">
+
+  <!-- Landing: Weather -->
+  <div id="weatherScreen" class="absolute w-full h-full flex flex-col items-center justify-center text-center z-20">
+    <h1 class="text-3xl md:text-5xl mb-10">Jab forecast says rain, </br> why just cling to the pane?</h1>
+    <h1 id="weatherText" class="text-3xl md:text-5xl mb-10">Fetching weather...</h1>
+    <button id="next1" class="px-10 py-3 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500">Next</button>
+  </div>
+
+  <!-- CTA: Cup of Tea -->
+  <div id="teaScreen" class="absolute w-full h-full flex flex-col items-center justify-center text-center z-10 hidden">
+    <h1 class="text-3xl md:text-5xl mb-10">Only chai se maza nahi aaye!</h1>
+    <p class="text-xl md:text-3xl mb-10">Isliye perfect partner hum hai laaye.</p>
+    <button id="findOut" class="px-10 py-3 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500">Find Out</button>
+    <img id="tea-gif" class="relative -z-1" style="opacity: 0;" src="models/coffee.gif" alt="">
+  </div>
+
+  <!-- Instructions overlay -->
+  <div id="instructions" class="absolute w-full h-full flex flex-col items-center justify-center text-center z-10 hidden bg-black bg-opacity-70">
+    <h1 class="text-2xl md:text-4xl m-10">MOVE YOUR PHONE AROUND</br> to explore</h1>
+    <hr class="w-48 h-1 mx-auto my-4 bg-gray-100 border-0 rounded-sm md:my-10">
+    <p class="text-xl md:text-3xl m-10">Tap to Collect</p>
+  </div>
+
+  <!-- WebXR Canvas will be injected by three.js -->
+</body>
+</html>
