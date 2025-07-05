@@ -70,7 +70,7 @@ document.getElementById("findOut").addEventListener("click", async () => {
       document.getElementById("teaScreen").style.display = "none";
       document.getElementById("instructions").style.display = "flex";
       gsap.from("#instructions", { opacity: 0, duration: 0.8 });
-      startAR();
+      loadModel();
       setTimeout(() => {
         document.getElementById("instructions").style.display = "none";
         arButton.click();
@@ -92,7 +92,15 @@ let placed = false;
 // Load tea cup model once
 
 // === AR Setup ===
-export function startAR() {
+export function loadModel() {
+  const loader = new GLTFLoader();
+  loader.load("/models/tea-cup.glb", (gltf) => {
+    model = gltf.scene;
+    startAR();
+  });
+}
+
+function startAR() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera();
 
@@ -104,11 +112,6 @@ export function startAR() {
   const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
   light.position.set(0.5, 1, 0.25);
   scene.add(light);
-
-  const loader = new GLTFLoader();
-  loader.load("/models/tea-cup.glb", (gltf) => {
-    model = gltf.scene;
-  });
 
   const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
   const material = new THREE.MeshBasicMaterial({ color: 0x00ffff });
@@ -124,6 +127,36 @@ export function startAR() {
   renderer.setAnimationLoop(render);
 
   window.addEventListener("resize", onWindowResize, false);
+
+  window.addEventListener('click', (event) => {
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(cups, true);
+    
+    if (intersects.length > 0) {
+    const selected = intersects[0].object;
+
+    gsap.to(selected.scale, {
+        x: 0,
+        y: 0,
+        z: 0,
+        duration: 0.5,
+        onComplete: () => {
+          // Remove full GLTF hierarchy if needed
+          const root = findRoot(selected);
+          scene.remove(root);
+          cups.splice(cups.indexOf(root), 1);
+        },
+      });
+    } else {
+    }
+  });
 }
 
 function onWindowResize() {
