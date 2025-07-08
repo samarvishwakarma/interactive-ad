@@ -76,9 +76,6 @@ document.getElementById("findOut").addEventListener("click", async () => {
       document.getElementById("instructions").style.display = "flex";
       gsap.from("#instructions", { opacity: 0, duration: 0.8 });
       arButton.click();
-      setTimeout(() => {
-        document.getElementById("instructions").style.display = "none";
-      }, 3000);
     },
   });
 });
@@ -114,8 +111,8 @@ let placed = false;
 // Load tea cup model once
 const counterText = new Text();
 counterText.text = `Cups collected: 0/3`;
-counterText.fontSize = 0.05;
-counterText.position.set(-0.5, 0.5, -0.5); // In front of camera
+counterText.fontSize = 0.025;
+counterText.position.set(0, 0.2, -0.5); // In front of camera
 counterText.sync();
 
 function updateCounter() {
@@ -125,7 +122,7 @@ function updateCounter() {
 
 const alertText = new Text();
 alertText.text = `🎉 Cup Collected!`;
-alertText.fontSize = 0.025;
+alertText.fontSize = 0.0125;
 alertText.position.set(0, 0, -0.5); // In front of camera
 
 function showAlert() {
@@ -211,9 +208,7 @@ function startAR() {
           showAlert();
 
           if (collectedCount === 3) {
-            setTimeout(() => {
               endAR();
-            }, 2000);
           }
         },
       });
@@ -260,11 +255,14 @@ function render(timestamp, frame) {
       if (hitTestResults.length) {
         const hit = hitTestResults[0];
         const pose = hit.getPose(referenceSpace);
-        reticle.visible = true;
+        reticle.visible = false;
         reticle.matrix.fromArray(pose.transform.matrix);
         if (!placed) {
           placeCups(pose);
           placed = true;
+          setTimeout(() => {
+            document.getElementById("instructions").style.display = "none";
+          }, 3000);
         }
       } else {
         reticle.visible = false;
@@ -329,9 +327,7 @@ function onSelect() {
         showAlert();
 
         if (collectedCount === 3) {
-          setTimeout(() => {
             endAR();
-          }, 2000);
         }
       },
     });
@@ -349,24 +345,26 @@ function endAR() {
 
   // End XR session
   const session = renderer.xr.getSession();
-  session.end().then(() => {
-    // Show Thank You page
-    document.body.innerHTML = `
-      <div class="relative flex items-center justify-center h-screen text-black" id="thank-you">
-        <button id="closeBtn" class="absolute top-4 right-4 text-white rounded-full w-8 h-8 flex items-center justify-center shadow">
-          ✕
-        </button>
-        <div class="flex items-center justify-center h-screen text-white text-4xl font-bold">
-            Thank you for playing! 🎉</br>
-            You have collected 3 Plates
-          </div>
-      </div>  
-    `;
+  setTimeout(() => {
+     session.end().then(() => {
+      // Show Thank You page
+      document.body.innerHTML = `
+        <div class="relative flex items-center justify-center h-screen text-black" id="thank-you">
+          <button id="closeBtn" class="absolute top-4 right-4 text-white rounded-full w-8 h-8 flex items-center justify-center shadow">
+            ✕
+          </button>
+          <div class="flex items-center justify-center h-screen text-white text-4xl font-bold">
+              Thank you for playing! 🎉</br>
+              You have collected 3 Plates
+            </div>
+        </div>  
+      `;
 
-    gsap.to("#thank-you", { opacity: 1, duration: 0.5, delay: 1.5 });
+      gsap.to("#thank-you", { opacity: 1, duration: 0.5, delay: 1.5 });
 
-    document.getElementById('closeBtn').addEventListener('click', () => {
-      location.reload();
+      document.getElementById('closeBtn').addEventListener('click', () => {
+        location.reload();
+      });
     });
-  });
+  }, 2000)
 }
