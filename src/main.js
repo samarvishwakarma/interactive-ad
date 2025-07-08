@@ -112,7 +112,7 @@ let placed = false;
 const counterText = new Text();
 counterText.text = `Cups collected: 0/3`;
 counterText.fontSize = 0.025;
-counterText.position.set(0, 0.2, -0.5); // In front of camera
+counterText.position.set(-0.125, 0.2, -0.5); // In front of camera
 counterText.sync();
 
 function updateCounter() {
@@ -120,10 +120,15 @@ function updateCounter() {
   counterText.sync();
 }
 
+const thankYouText = new Text();
+thankYouText.text = `🎉 Thank You!`;
+thankYouText.fontSize = 0.025;
+thankYouText.position.set(-0.125, 0, -0.5); // In front of camera
+
 const alertText = new Text();
 alertText.text = `🎉 Cup Collected!`;
 alertText.fontSize = 0.0125;
-alertText.position.set(0, 0, -0.5); // In front of camera
+alertText.position.set(-0.075, 0, -0.5); // In front of camera
 
 function showAlert() {
   alertText.visible = true;
@@ -149,9 +154,14 @@ function startAR() {
   camera = new THREE.PerspectiveCamera();
 
   scene.add(counterText);
-  scene.add(alertText);
   camera.add(counterText);
+  
+  scene.add(alertText);
   camera.add(alertText);
+  
+  scene.add(thankYouText);
+  camera.add(thankYouText);
+  
   scene.add(camera);
 
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -345,15 +355,20 @@ function endAR() {
 
   // End XR session
   const session = renderer.xr.getSession();
+
+  gsap.fromTo(thankYouText.scale, { x: 0, y: 0, z: 0 }, {
+    x: 1, y: 1, z: 1, duration: 0.3, delay: 0.3
+  });
+
   setTimeout(() => {
      session.end().then(() => {
       // Show Thank You page
       document.body.innerHTML = `
-        <div class="relative flex items-center justify-center h-screen text-black" id="thank-you">
+        <div class="relative flex items-center justify-center h-screen text-black px-3" id="thank-you">
           <button id="closeBtn" class="absolute top-4 right-4 text-white rounded-full w-8 h-8 flex items-center justify-center shadow">
             ✕
           </button>
-          <div class="flex items-center justify-center h-screen text-white text-4xl font-bold">
+          <div class="flex items-center justify-center h-screen text-white text-2xl md:text-4xl font-bold">
               Thank you for playing! 🎉</br>
               You have collected 3 Plates
             </div>
@@ -366,5 +381,5 @@ function endAR() {
         location.reload();
       });
     });
-  }, 2000)
+  }, 3000)
 }
