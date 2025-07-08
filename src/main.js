@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ARButton } from "three/examples/jsm/webxr/ARButton.js";
 import gsap from "gsap";
+import { Text } from 'troika-three-text';
 
 // Weather API
 const weatherText = document.getElementById("weatherText");
@@ -76,33 +77,29 @@ document.getElementById("findOut").addEventListener("click", async () => {
       gsap.from("#instructions", { opacity: 0, duration: 0.8 });
       arButton.click();
       setTimeout(() => {
-        document.getElementById("counter").style.display = "flex";
         document.getElementById("instructions").style.display = "none";
-        gsap.from("#counter", { opacity: 0, duration: 0.8 });
-      }, 5000);
+      }, 3000);
     },
   });
 });
 
 let collectedCount = 0;
-const collectedEl = document.getElementById("collected");
-const alertEl = document.getElementById("alert");
 
-function showAlert() {
-  // Animate in → hold → animate out
-  gsap.fromTo(
-    alertEl,
-    { opacity: 0, scale: 0.8 },
-    { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }
-  );
-  gsap.to(alertEl, {
-    opacity: 0,
-    scale: 0.8,
-    duration: 0.5,
-    delay: 1.5,
-    ease: "power2.in",
-  });
-}
+// function showAlert() {
+//   // Animate in → hold → animate out
+//   gsap.fromTo(
+//     alertEl,
+//     { opacity: 0, scale: 0.8 },
+//     { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }
+//   );
+//   gsap.to(alertEl, {
+//     opacity: 0,
+//     scale: 0.8,
+//     duration: 0.5,
+//     delay: 1.5,
+//     ease: "power2.in",
+//   });
+// }
 
 // WebXR AR
 // Core
@@ -115,6 +112,31 @@ const cups = []; // Active cups
 let placed = false;
 
 // Load tea cup model once
+const counterText = new Text();
+counterText.text = `Cups collected: 0/3`;
+counterText.fontSize = 0.05;
+counterText.position.set(-0.5, 0.5, -0.5); // In front of camera
+counterText.sync();
+
+function updateCounter() {
+  counterText.text = `Cups collected: ${collectedCount}/3`;
+  counterText.sync();
+}
+
+const alertText = new Text();
+alertText.text = `🎉 Cup Collected!`;
+alertText.fontSize = 0.025;
+alertText.position.set(0, 0, -0.5); // In front of camera
+
+function showAlert() {
+  alertText.visible = true;
+  gsap.fromTo(alertText.scale, { x: 0, y: 0, z: 0 }, {
+    x: 1, y: 1, z: 1, duration: 0.1,
+    onComplete: () => {
+      gsap.to(alertText.scale, { x: 0, y: 0, z: 0, duration: 0.2, delay: 1 });
+    }
+  });
+}
 
 // === AR Setup ===
 export function loadModel() {
@@ -128,6 +150,12 @@ export function loadModel() {
 function startAR() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera();
+
+  scene.add(counterText);
+  scene.add(alertText);
+  camera.add(counterText);
+  camera.add(alertText);
+  scene.add(camera);
 
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -178,12 +206,14 @@ function startAR() {
           cups.splice(cups.indexOf(root), 1);
 
           collectedCount++;
-          collectedEl.textContent = collectedCount;
+          updateCounter();
 
           showAlert();
 
           if (collectedCount === 3) {
-            endAR();
+            setTimeout(() => {
+              endAR();
+            }, 2000);
           }
         },
       });
@@ -294,12 +324,14 @@ function onSelect() {
         cups.splice(cups.indexOf(root), 1);
 
         collectedCount++;
-        collectedEl.textContent = collectedCount;
+        updateCounter();
 
         showAlert();
 
         if (collectedCount === 3) {
-          endAR();
+          setTimeout(() => {
+            endAR();
+          }, 2000);
         }
       },
     });
@@ -314,7 +346,6 @@ function findRoot(object) {
 }
 
 function endAR() {
-  console.log("✅ All cups collected!");
 
   // End XR session
   const session = renderer.xr.getSession();
