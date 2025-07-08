@@ -5,6 +5,7 @@ import gsap from "gsap";
 
 // Weather API
 const weatherText = document.getElementById("weatherText");
+const cityText = document.getElementById("cityText");
 
 async function getWeather() {
   try {
@@ -17,10 +18,12 @@ async function getWeather() {
     const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&appid=${apiKey}`;
     const res = await fetch(url);
     const data = await res.json();
-    weatherText.innerText = `🌦️ ${data.main.temp}°C ${data.name}`;
+    weatherText.innerText = `🌦️ ${data.main.temp}°C`;
+    cityText.innerText = `${data.name}`;
   } catch {
     const temp = Math.floor(Math.random() * 10) + 20;
-    weatherText.innerText = `🌦️ ${temp}°C Noida`;
+    weatherText.innerText = `🌦️ ${temp}`;
+    cityText.innerText = `Noida`;
   }
 }
 
@@ -63,6 +66,7 @@ document.getElementById("findOut").addEventListener("click", async () => {
   // } catch (err) {
   //   alert("Camera permission denied!");
   // }
+  loadModel();
   gsap.to("#teaScreen", {
     opacity: 0,
     duration: 0.8,
@@ -70,14 +74,35 @@ document.getElementById("findOut").addEventListener("click", async () => {
       document.getElementById("teaScreen").style.display = "none";
       document.getElementById("instructions").style.display = "flex";
       gsap.from("#instructions", { opacity: 0, duration: 0.8 });
-      loadModel();
+      arButton.click();
       setTimeout(() => {
+        document.getElementById("counter").style.display = "flex";
         document.getElementById("instructions").style.display = "none";
-        arButton.click();
-      }, 3000);
+        gsap.from("#counter", { opacity: 0, duration: 0.8 });
+      }, 5000);
     },
   });
 });
+
+let collectedCount = 0;
+const collectedEl = document.getElementById("collected");
+const alertEl = document.getElementById("alert");
+
+function showAlert() {
+  // Animate in → hold → animate out
+  gsap.fromTo(
+    alertEl,
+    { opacity: 0, scale: 0.8 },
+    { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }
+  );
+  gsap.to(alertEl, {
+    opacity: 0,
+    scale: 0.8,
+    duration: 0.5,
+    delay: 1.5,
+    ease: "power2.in",
+  });
+}
 
 // WebXR AR
 // Core
@@ -128,30 +153,38 @@ function startAR() {
 
   window.addEventListener("resize", onWindowResize, false);
 
-  window.addEventListener('click', (event) => {
+  window.addEventListener("click", (event) => {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
 
     const intersects = raycaster.intersectObjects(cups, true);
-    
-    if (intersects.length > 0) {
-    const selected = intersects[0].object;
 
-    gsap.to(selected.scale, {
+    if (intersects.length > 0) {
+      const selected = intersects[0].object;
+
+      gsap.to(selected.scale, {
         x: 0,
         y: 0,
         z: 0,
         duration: 0.5,
         onComplete: () => {
-          // Remove full GLTF hierarchy if needed
           const root = findRoot(selected);
           scene.remove(root);
           cups.splice(cups.indexOf(root), 1);
+
+          collectedCount++;
+          collectedEl.textContent = collectedCount;
+
+          showAlert();
+
+          if (collectedCount === 3) {
+            endAR();
+          }
         },
       });
     } else {
@@ -219,12 +252,12 @@ function placeCups(pose) {
     pose.transform.position.z
   );
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 3; i++) {
     const cup = model.clone();
 
     // Scatter within a 1m radius
-    const offsetX = (Math.random() - 0.5) * 2.0; // -1m to +1m
-    const offsetZ = (Math.random() - 0.5) * 2.0;
+    const offsetX = (Math.random() - 0.5) * 5.0; // -1m to +1m
+    const offsetZ = (Math.random() - 0.5) * 5.0;
 
     cup.position.set(
       basePosition.x + offsetX,
@@ -237,7 +270,7 @@ function placeCups(pose) {
   }
 }
 
-function onSelect(event) {
+function onSelect() {
   const raycaster = new THREE.Raycaster();
   const tempMatrix = new THREE.Matrix4();
 
@@ -256,13 +289,20 @@ function onSelect(event) {
       z: 0,
       duration: 0.5,
       onComplete: () => {
-        // Remove full GLTF hierarchy if needed
         const root = findRoot(selected);
         scene.remove(root);
         cups.splice(cups.indexOf(root), 1);
+
+        collectedCount++;
+        collectedEl.textContent = collectedCount;
+
+        showAlert();
+
+        if (collectedCount === 3) {
+          endAR();
+        }
       },
     });
-  } else {
   }
 }
 
@@ -271,4 +311,31 @@ function findRoot(object) {
     object = object.parent;
   }
   return object;
+}
+
+function endAR() {
+  console.log("✅ All cups collected!");
+
+  // End XR session
+  const session = renderer.xr.getSession();
+  session.end().then(() => {
+    // Show Thank You page
+    document.body.innerHTML = `
+      <div class="relative flex items-center justify-center h-screen text-black" id="thank-you">
+        <button id="closeBtn" class="absolute top-4 right-4 text-white rounded-full w-8 h-8 flex items-center justify-center shadow">
+          ✕
+        </button>
+        <div class="flex items-center justify-center h-screen text-white text-4xl font-bold">
+            Thank you for playing! 🎉</br>
+            You have collected 3 Plates
+          </div>
+      </div>  
+    `;
+
+    gsap.to("#thank-you", { opacity: 1, duration: 0.5, delay: 1.5 });
+
+    document.getElementById('closeBtn').addEventListener('click', () => {
+      location.reload();
+    });
+  });
 }

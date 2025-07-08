@@ -8,5 +8,7 @@ html, body {
   background-image: url('/models/rain.gif');
   background-size: cover;
   background-blend-mode: multiply;
+  font-family: "Ubuntu", sans-serif;
+  font-weight: 500;
+  font-style: normal;
 }
-
