@@ -2,39 +2,59 @@
 <html lang="en" class="w-full h-full">
 <head>
   <meta charset="UTF-8" />
-  <title>Weather AR Tea</title>
+  <title>Universal Weather AR Tea</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script type="module" src="src/main.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;700&display=swap" rel="stylesheet" />
   <link href="src/style.css" rel="stylesheet">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
 </head>
 
 <body class="m-0 w-full h-full overflow-hidden relative text-white">
 
+  <!-- Weather screen -->
   <div id="weatherScreen" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-20">
-    <h1 class="text-3xl md:text-5xl mb-6 md:mb-10 leading-tight">Jab forecast says rain,<br /> why just cling to the pane?</h1>
-    <h1 id="weatherText" class="text-5xl md:text-7xl mb-3 md:mb-3">Fetching weather...</h1>
-    <h1 id="cityText" class="text-4xl md:text-4xl mb-6 md:mb-10"></h1>
-    <button id="next1" class="px-8 py-3 md:px-10 md:py-4 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500 transition">Next</button>
+    <h1 class="text-3xl md:text-5xl mb-6 md:mb-10 leading-tight">
+      Jab forecast says rain,<br /> why just cling to the pane?
+    </h1>
+    <h1 id="weatherText" class="text-5xl md:text-7xl mb-3">Fetching weather...</h1>
+    <h1 id="cityText" class="text-4xl mb-6"></h1>
+    <button id="next1" class="px-8 py-3 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500 transition">
+      Next
+    </button>
   </div>
 
+  <!-- Tea screen -->
   <div id="teaScreen" class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10 hidden">
-    <h1 class="text-4xl md:text-5xl mb-4 md:mb-6 leading-tight">Only chai se maza nahi aaye!</h1>
-    <p class="text-2lg md:text-3xl mb-6 md:mb-10 leading-tight">Isliye perfect partner hum hai laaye.</p>
-    <button id="findOut" class="px-8 py-3 md:px-10 md:py-4 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500 transition">Find Out</button>
-    <img id="tea-gif" class="relative -z-1 mt-6 md:mt-10 max-w-[80%] md:max-w-xs" style="opacity: 0;" src="models/coffee.gif" alt="Cup of Tea GIF">
+    <h1 class="text-4xl md:text-5xl mb-4 leading-tight">Only chai se maza nahi aaye!</h1>
+    <p class="text-2lg md:text-3xl mb-6 leading-tight">Isliye perfect partner hum hai laaye.</p>
+    <button id="findOut" class="px-8 py-3 bg-yellow-400 text-black rounded-md font-semibold hover:bg-yellow-500 transition">
+      Find Out
+    </button>
+    <img id="tea-gif" class="relative -z-1 mt-6 max-w-[80%] md:max-w-xs" style="opacity: 0;" src="models/coffee.gif" alt="Cup of Tea GIF" />
   </div>
 
-  <div id="instructions" class="absolute inset-0 flex flex-col items-center justify-center text-center z-10 hidden bg-black bg-opacity-70 px-6 z-[10000]">
-    <h1 class="text-xl md:text-4xl mb-4 md:mb-6 leading-tight">MOVE YOUR PHONE AROUND<br /> to explore</h1>
-    <hr class="w-32 md:w-48 h-1 mx-auto my-2 md:my-4 bg-gray-100 border-0 rounded-sm">
+  <!-- Instructions -->
+  <div id="instructions" class="absolute inset-0 flex flex-col items-center justify-center text-center bg-black bg-opacity-70 px-6 hidden z-[10000]">
+    <h1 class="text-xl md:text-4xl mb-4 leading-tight">MOVE YOUR PHONE AROUND<br /> to explore</h1>
+    <hr class="w-32 h-1 mx-auto my-2 bg-gray-100 border-0 rounded-sm" />
     <p class="text-lg md:text-2xl">Tap to Collect</p>
   </div>
 
-  <!-- WebXR Canvas will be injected by three.js -->
+  <!-- iOS AR -->
+  <div id="iosAR" class="hidden">
+    <model-viewer src="models/tea-cup.glb"
+      ios-src="models/tea-cup.usdz"
+      ar ar-modes="quick-look"
+      camera-controls
+      style="width: 100%; height: 100vh; background: #000;"></model-viewer>
+  </div>
+
+  <!-- Fallback Viewer -->
+  <div id="fallbackViewer" class="hidden"></div>
 
 </body>
 </html>
